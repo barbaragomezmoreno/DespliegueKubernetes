@@ -1,0 +1,38 @@
+---
+- name: Instalar Minikube y Kubernetes
+  hosts: all
+  become: true
+
+  tasks:
+    - name: Instalar Minikube
+      apt:
+        name: minikube
+        state: present
+
+    - name: Instalar kubectl
+      apt:
+        name: kubectl
+        state: present
+
+    - name: Iniciar Minikube
+      command: minikube start
+
+    - name: Configurar kubectl
+      command: kubectl config use-context minikube
+
+    - name: Desplegar la aplicación de API REST
+      command: kubectl apply -f /home/devasc/Documents/api/deployment.yml
+
+    - name: Esperar a que la aplicación se inicie
+      command: kubectl wait --for=condition=available --timeout=300s deployment/flask-restapi
+
+    - name: Exponer la aplicación a través de un servicio
+      command: kubectl expose deployment flask-restapi --type=LoadBalancer --port=80
+
+    - name: Obtener la dirección IP del servicio
+      shell: kubectl get service flask-restapi -o jsonpath='{.status.loadBalancer.ingress[0].ip}'
+      register: service_ip
+
+    - name: Imprimir la dirección IP del servicio
+      debug:
+        msg: "La dirección IP del servicio es {{ service_ip.stdout }}"

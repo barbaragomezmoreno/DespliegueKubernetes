@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pythonapi
+spec:
+  containers:
+    - image: barbaragomez/flask-restapi
+      name: pythonapi
+      imagePullPolicy: Always
+      resources: {}
+      ports:
+        - containerPort: 5000
